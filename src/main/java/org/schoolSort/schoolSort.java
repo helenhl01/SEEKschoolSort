@@ -12,9 +12,11 @@ public class schoolSort {
         Student[] studentArray = createStudentArray("../../Downloads/seekStudents.json");
         List<School> schoolList = schoolInits();
         for(School x : schoolList){
-            fillSchool(x, studentArray);
+            if(Objects.equals(x.getName(), "NYOS Hyperloop")){
+                fillHyperloop(x, studentArray);
+            }
+            else{fillSchool(x, studentArray);}
         }
-        //fillSchool(schoolList.get(0), studentArray); //iterate through
         createReport("test.csv", "test.txt", schoolList, studentArray);
         //implementation: list of schools, list of students, iterate through both, have a bool for full/not full, student assigned/unassigned
     }
@@ -31,7 +33,13 @@ public class schoolSort {
                 writer.newLine();
                 for(Student y : x.getStudentList()){
                     writer.append(y.getFirstName() + " " + y.getLastName());
+                    if(y.getCarSpace() > 0){writer.append("," + y.getCarSpace());}
+                    else{writer.append(",");}
+                    if(y.getPo()){writer.append("," + "PO");}
+                    else if (y.getExec()){writer.append("," + "Exec");}
+                    else{writer.append(",");}
                     writer.append("," + y.getEid() + "," + y.getEmail() + "," + y.getPhone());
+                    if(y.getNonRegister()){ writer.append("," + "Won't register");}
                     writer.newLine();
                 }
             }
@@ -127,70 +135,52 @@ public class schoolSort {
         }
         return null;
     }
-    public static Boolean isStudentAvailable(Student student, String time){
-        switch(time){
-            case "monday1":
-                return student.getMonday1() > 0;
-            case "monday2":
-                return student.getMonday2() > 0;
-            case "tuesday1":
-                return student.getTuesday1() > 0;
-            case "tuesday2":
-                return student.getTuesday2() > 0;
-            case "wednesday1":
-                return student.getWednesday1() > 0;
-            case "wednesday2":
-                return student.getWednesday2() > 0;
-            case "thursday1":
-                return student.getThursday1() > 0;
-            case "thursday2":
-                return student.getThursday2() > 0;
-        }
-        return false;
-    }
 
-    public static Boolean doesStudentPrefer(Student student, String time){
-        switch(time){
-            case "monday1":
-                return student.getMonday1() == 2;
-            case "monday2":
-                return student.getMonday2() == 2;
-            case "tuesday1":
-                return student.getTuesday1() == 2;
-            case "tuesday2":
-                return student.getTuesday2() == 2;
-            case "wednesday1":
-                return student.getWednesday1() == 2;
-            case "wednesday2":
-                return student.getWednesday2() == 2;
-            case "thursday1":
-                return student.getThursday1() == 2;
-            case "thursday2":
-                return student.getThursday2() == 2;
+    public static void fillHyperloop(School school, Student[] studentArray) {
+        for(Student x : studentArray){
+            if(x.getHyperloop()){
+                x.setSchool(school);
+                school.addStudent(x);
+                //will have to manually assert availability
+                //if there's not enough students will have to add another loop but i dont really want to put random ppl in hyperloop yet
+            }
         }
-        return false;
+
     }
 
     public static void fillSchool(School school, Student[] studentArray) {
-        if (school.getStudentList().size() < school.getCap()) {
-            for (Student x : studentArray) { //get preferred studnets first
-                if ((x.getSchool() == null) && doesStudentPrefer(x, school.getTime())) {
+        assert !school.full() : "School is already full";
+        for(Student x : studentArray){ //drivers first
+            if(!school.enoughDrivers()){
+                if(x.getCarSpace() > 0 && x.isAvailableAt(school.getTime()) &&  x.isUnassigned() && !x.getHyperloop()){
                     x.setSchool(school);
                     school.addStudent(x);
                 }
             }
         }
-
+        if(!school.full()) {
+            for (Student x : studentArray) { //get preferred next
+                if (x.isUnassigned() && x.prefers(school.getTime()) && !x.getHyperloop()) {
+                    x.setSchool(school);
+                    school.addStudent(x);
+                }
+                if(school.full()){
+                    System.out.println(school.getName() + " has been filled");
+                    //System.out.println(school);
+                    break;
+                }
+            }
+        }
         for (Student x : studentArray) {
-            if (school.getStudentList().size() < school.getCap()) {
-                if ((x.getSchool() == null) && isStudentAvailable(x, school.getTime())) {
+            if (!school.full()) {
+                if (x.isUnassigned() && x.isAvailableAt(school.getTime()) && !x.getHyperloop()) {
                     x.setSchool(school);
                     school.addStudent(x);
                 }
             }
-            if (school.getStudentList().size() >= school.getCap()) {
+            if (school.full()) {
                 System.out.println(school.getName() + " has been filled");
-                System.out.println(school);
+                //System.out.println(school);
                 break;
             }
 
@@ -347,14 +337,15 @@ public class schoolSort {
     }
     public static List<School> schoolInits(){
         List<School> schoolList = new ArrayList<>();
-        schoolList.add(new School("school1", "monday1", 5));
-        schoolList.add(new School("school2", "monday2", 3));
-        schoolList.add(new School("school3", "tuesday1", 2));
-        schoolList.add(new School("school4", "tuesday2", 1));
-        schoolList.add(new School("school5", "wednesday1", 4));
-        schoolList.add(new School("school6", "wednesday2", 5));
-        schoolList.add(new School("school7", "thursday1", 3));
-        schoolList.add(new School("school8", "thursday2", 4));
+        schoolList.add(new School("school1", "monday1", 10));
+        schoolList.add(new School("school2", "monday2", 6));
+        schoolList.add(new School("school3", "tuesday1", 4));
+        schoolList.add(new School("school4", "tuesday2", 10));
+        schoolList.add(new School("school5", "wednesday1", 20));
+        schoolList.add(new School("school6", "wednesday2", 15));
+        schoolList.add(new School("school7", "thursday1", 10));
+        schoolList.add(new School("school8", "thursday2", 12));
+        schoolList.add(new School("NYOS Hyperloop", "thursday2", 5));
         return schoolList;
     }
 

@@ -9,13 +9,13 @@ public class Student {
     private String lastName;
     private String eid;
     private School school;
-    private Boolean po;
-    private Boolean exec;
-    private Boolean nonRegister;
+    private Boolean po = false; //default false, have to set true
+    private Boolean exec = false; //default false, have to set true
+    private Boolean nonRegister = false; //default false, have to set true
     private String email;
     private String phone;
     private int carSpace;
-    //should i add an attribute for hyperloop
+    private Boolean hyperloop = false; //default false, have to set to true
 
     private int monday1;
     private int monday2;
@@ -54,6 +54,7 @@ public class Student {
     public String getEmail(){return email;}
     public String getPhone(){return phone;}
     public int getCarSpace(){return carSpace;}
+    public Boolean getHyperloop(){return hyperloop;}
 
     public int getMonday1(){ return monday1;}
     public int getMonday2(){ return monday2;}
@@ -64,6 +65,53 @@ public class Student {
     public int getThursday1(){ return thursday1;}
     public int getThursday2(){ return thursday2;}
 
+    public Boolean isUnassigned(){
+        if(school == null){ return true;}
+        return false;
+    }
+
+    public Boolean prefers(String time){
+        switch(time){
+            case "monday1":
+                return monday1 == 2;
+            case "monday2":
+                return monday2 == 2;
+            case "tuesday1":
+                return tuesday1 == 2;
+            case "tuesday2":
+                return tuesday2 == 2;
+            case "wednesday1":
+                return wednesday1 == 2;
+            case "wednesday2":
+                return wednesday2 == 2;
+            case "thursday1":
+                return thursday1 == 2;
+            case "thursday2":
+                return thursday2 == 2;
+        }
+        return false;
+    }
+    public Boolean isAvailableAt(String time){
+        switch(time){
+            case "monday1":
+                return monday1 > 0;
+            case "monday2":
+                return monday2 > 0;
+            case "tuesday1":
+                return tuesday1 > 0;
+            case "tuesday2":
+                return tuesday2 > 0;
+            case "wednesday1":
+                return wednesday1 > 0;
+            case "wednesday2":
+                return wednesday2 > 0;
+            case "thursday1":
+                return thursday1 > 0;
+            case "thursday2":
+                return thursday2 > 0;
+        }
+        return false;
+    }
     public void setFirstName(String firstName){ this.firstName = firstName;}
     public void setLastName(String lastName){ this.lastName = lastName;}
     public void setEid(String eid){ this.eid = eid;}
@@ -74,6 +122,7 @@ public class Student {
     public void setEmail(String email){ this.email = email;}
     public void setPhone(String phone){ this.phone = phone;}
     public void setCarSpace(int carSpace){this.carSpace = carSpace;}
+    public void setHyperloop(Boolean hyperloop){this.hyperloop = hyperloop;}
 
     public void setMonday1(int monday1){ this.monday1 = monday1;}
     public void setMonday2(int monday2){ this.monday2 = monday2;}
@@ -89,6 +138,7 @@ public class Student {
         String output = firstName + " " + lastName;
         if(Objects.equals(po, true)){ output += ", is a PO"; }
         if(Objects.equals(exec, true)){ output += ", is an exec";}
+        if(Objects.equals(hyperloop, true)){output+=" (hyperloop)";}
         if(Objects.equals(nonRegister, true)){ output += ", will not register";}
         if(school == null){ output+= ", unassigned";}
         else{ output += ", assigned to " + school.getName();}

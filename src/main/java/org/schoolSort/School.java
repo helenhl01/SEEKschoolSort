@@ -22,9 +22,17 @@ public class School {
         if(getCarCap() >= studentList.size()){ return true;}
         return false;
     }
+    public Boolean enoughDrivers(){
+        if(getCarCap() >= cap){return true;}
+        return false;
+    }
+    public Boolean full(){
+        if(cap > studentList.size()){return false;}
+        return true;
+    }
     public int ridesNeeded(){
         assert enoughRides() == false : "This school already has enough rides";
-        return studentList.size() - getCap();
+        return studentList.size() - getCarCap();
     }
     public School(String name, String time, int cap){
         this.name = name;
