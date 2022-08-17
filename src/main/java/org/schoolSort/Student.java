@@ -12,8 +12,10 @@ public class Student {
     private Boolean po;
     private Boolean exec;
     private Boolean nonRegister;
+    private String email;
+    private String phone;
+    private int carSpace;
     //should i add an attribute for hyperloop
-    //eventuylaly add email? idk if useful
 
     private int monday1;
     private int monday2;
@@ -49,6 +51,9 @@ public class Student {
     public Boolean getPo(){ return po;}
     public Boolean getExec(){ return exec;}
     public Boolean getNonRegister(){ return nonRegister;}
+    public String getEmail(){return email;}
+    public String getPhone(){return phone;}
+    public int getCarSpace(){return carSpace;}
 
     public int getMonday1(){ return monday1;}
     public int getMonday2(){ return monday2;}
@@ -66,6 +71,9 @@ public class Student {
     public void setPo(Boolean po){ this.po = po;}
     public void setExec(Boolean exec){this.exec = exec;}
     public void setNonRegister(Boolean nonRegister){ this.nonRegister = nonRegister;}
+    public void setEmail(String email){ this.email = email;}
+    public void setPhone(String phone){ this.phone = phone;}
+    public void setCarSpace(int carSpace){this.carSpace = carSpace;}
 
     public void setMonday1(int monday1){ this.monday1 = monday1;}
     public void setMonday2(int monday2){ this.monday2 = monday2;}
@@ -78,32 +86,33 @@ public class Student {
 
     @Override
     public String toString(){
-        String output = this.firstName + " " + this.lastName + " " + this.eid;
-        if(Objects.equals(this.po, true)){ output += ", is a PO"; }
-        if(Objects.equals(this.exec, true)){ output += ", is an exec";}
-        if(Objects.equals(this.nonRegister, true)){ output += ", will not register";}
-        if(this.school == null){ output+= ", unassigned";}
-        else{ output += ", assigned to " + this.school.getName();}
+        String output = firstName + " " + lastName;
+        if(Objects.equals(po, true)){ output += ", is a PO"; }
+        if(Objects.equals(exec, true)){ output += ", is an exec";}
+        if(Objects.equals(nonRegister, true)){ output += ", will not register";}
+        if(school == null){ output+= ", unassigned";}
+        else{ output += ", assigned to " + school.getName();}
+        if(carSpace > 0){ output += ", can drive " + carSpace + " people";}
         output += ", available at ";
-        if(this.monday1 == 1){ output += "Monday at 2:30, "; }
-        if(this.monday1 == 2){ output += "Monday at 2:30 (preferred), "; }
-        if(this.monday2 == 1){ output += "Monday at 3:30, "; }
-        if(this.monday2 == 2){ output += "Monday at 3:30 (preferred), "; }
+        if(monday1 == 1){ output += "Monday at 2:30, "; }
+        if(monday1 == 2){ output += "Monday at 2:30 (preferred), "; }
+        if(monday2 == 1){ output += "Monday at 3:30, "; }
+        if(monday2 == 2){ output += "Monday at 3:30 (preferred), "; }
 
-        if(this.tuesday1 == 1){ output += "Tuesday at 2:30, "; }
-        if(this.tuesday1 == 2){ output += "Tuesday at 2:30 (preferred), "; }
-        if(this.tuesday2 == 1){ output += "Tuesday at 3:30, "; }
-        if(this.tuesday2 == 2){ output += "Tuesday at 3:30 (preferred), "; }
+        if(tuesday1 == 1){ output += "Tuesday at 2:30, "; }
+        if(tuesday1 == 2){ output += "Tuesday at 2:30 (preferred), "; }
+        if(tuesday2 == 1){ output += "Tuesday at 3:30, "; }
+        if(tuesday2 == 2){ output += "Tuesday at 3:30 (preferred), "; }
 
-        if(this.wednesday1 == 1){ output += "Wednesday at 2:30, "; }
-        if(this.wednesday1 == 2){ output += "Wednesday at 2:30 (preferred), "; }
-        if(this.wednesday2 == 1){ output += "Wednesday at 3:30, "; }
-        if(this.wednesday2 == 2){ output += "Wednesday at 3:30 (preferred), "; }
+        if(wednesday1 == 1){ output += "Wednesday at 2:30, "; }
+        if(wednesday1 == 2){ output += "Wednesday at 2:30 (preferred), "; }
+        if(wednesday2 == 1){ output += "Wednesday at 3:30, "; }
+        if(wednesday2 == 2){ output += "Wednesday at 3:30 (preferred), "; }
 
-        if(this.thursday1 == 1){ output += "Thursday at 2:30, "; }
-        if(this.thursday1 == 2){ output += "Thursday at 2:30 (preferred), "; }
-        if(this.thursday2 == 1){ output += "Thursday at 3:30, "; }
-        if(this.thursday2 == 2){ output += "Thursday at 3:30 (preferred), "; }
+        if(thursday1 == 1){ output += "Thursday at 2:30, "; }
+        if(thursday1 == 2){ output += "Thursday at 2:30 (preferred), "; }
+        if(thursday2 == 1){ output += "Thursday at 3:30, "; }
+        if(thursday2 == 2){ output += "Thursday at 3:30 (preferred), "; }
         return output;
     }
 }

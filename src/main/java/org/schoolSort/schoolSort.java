@@ -11,26 +11,43 @@ public class schoolSort {
     public static void main(String[] args) {
         Student[] studentArray = createStudentArray("../../Downloads/seekStudents.json");
         List<School> schoolList = schoolInits();
-        //List<Student> studentList = studentInits(); //probably there's a way to build a ton of diff possible schedules and score them by fit but im not that smart
-        fillSchool(schoolList.get(0), studentArray);
-        System.out.println(unassignedStudents(studentArray));
-        System.out.println(unfilledSchools(schoolList));
-        createReport("test.txt", schoolList, studentArray);
+        for(School x : schoolList){
+            fillSchool(x, studentArray);
+        }
+        //fillSchool(schoolList.get(0), studentArray); //iterate through
+        createReport("test.csv", "test.txt", schoolList, studentArray);
         //implementation: list of schools, list of students, iterate through both, have a bool for full/not full, student assigned/unassigned
     }
 
-    public static void createReport(String filename, List<School> schoolList, Student[] studentArray){
+    public static void createReport(String csvFilename, String txtFilename, List<School> schoolList, Student[] studentArray){
+        createSpreadsheet(csvFilename, schoolList);
+        createTxtReport(txtFilename, schoolList, studentArray);
+    }
+    public static void createSpreadsheet(String filename, List<School> schoolList){
         try{
             BufferedWriter writer = new BufferedWriter(new FileWriter(filename));
-            writer.append("School sort:");
-            writer.newLine();
             for(School x : schoolList){
-                writer.append(x.toString());
+                writer.append(x.getName());
                 writer.newLine();
+                for(Student y : x.getStudentList()){
+                    writer.append(y.getFirstName() + " " + y.getLastName());
+                    writer.append("," + y.getEid() + "," + y.getEmail() + "," + y.getPhone());
+                    writer.newLine();
+                }
             }
+            writer.close();
+        }
+        catch(Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void createTxtReport(String filename, List<School> schoolList, Student[] studentArray){
+        try{
+            BufferedWriter writer = new BufferedWriter(new FileWriter(filename));
             writer.append(unfilledSchools(schoolList));
             writer.append(unassignedStudents(studentArray));
-            //then add unfilled schools and unassigned students
+            writer.append(transpoReport(schoolList));
             writer.close();
         }
         catch(Exception e){
@@ -41,11 +58,10 @@ public class schoolSort {
         try{
             ObjectMapper mapper = new ObjectMapper();
             mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-            Student[] studentArray = mapper.readValue(new File(path), Student[].class);
+            return mapper.readValue(new File(path), Student[].class);
             //for(Student x : studentArray){
             //    System.out.println(x);
             //}
-            return studentArray;
         }
         catch(Exception e){
             e.printStackTrace();
@@ -55,7 +71,7 @@ public class schoolSort {
 
     public static String unassignedStudents(Student[] studentArray){
         StringBuffer buffer = new StringBuffer();
-        buffer.append("Unassigned students: \n");
+        buffer.append("\n\nUnassigned students: \n");
         int count = 0;
         for(Student x : studentArray){
             if(x.getSchool()==null){
@@ -65,8 +81,7 @@ public class schoolSort {
             }
         }
         buffer.append(count + " students unassigned");
-        String output = buffer.toString();
-        return output;
+        return buffer.toString();
     }
 
     public static String unfilledSchools(List<School> schoolList){
@@ -74,11 +89,21 @@ public class schoolSort {
         buffer.append("Unfilled schools: \n");
         for(School x : schoolList){
             if(x.getStudentList().size() < x.getCap()){
-                buffer.append(x.getName() + " (" + formatTime(x.getTime()) + ") has " + (x.getCap() - x.getStudentList().size()) + " slots left\n" );
+                buffer.append(x.getName()).append(" (").append(formatTime(x.getTime())).append(") has ").append(x.getCap() - x.getStudentList().size()).append(" slots left\n");
             }
         }
-        String output = buffer.toString();
-        return output;
+        return buffer.toString();
+    }
+
+    public static String transpoReport(List<School> schoolList){
+        StringBuffer buffer = new StringBuffer();
+        buffer.append("\n\nDrivers needed: \n");
+        for(School x : schoolList){
+            if(!x.enoughRides()){
+                buffer.append(x.getName() + " needs " + x.ridesNeeded() + " more rides\n");
+            }
+        }
+        return buffer.toString();
     }
 
     public static String formatTime(String time){ //do one for unformat? actually idk
@@ -207,7 +232,7 @@ public class schoolSort {
             case "thursday2":
                 for(Student x : studentArray){
                     if(x.getThursday2() > 0){ count++;}
-                };
+                }
         }
         return count;
     }

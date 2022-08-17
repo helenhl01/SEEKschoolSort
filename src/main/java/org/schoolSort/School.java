@@ -11,6 +11,21 @@ public class School {
     //full or not?
     //number of students assigned
 
+    public int getCarCap(){
+        int count = 0;
+        for(Student x : studentList){
+            count += x.getCarSpace();
+        }
+        return count;
+    }
+    public Boolean enoughRides(){
+        if(getCarCap() >= studentList.size()){ return true;}
+        return false;
+    }
+    public int ridesNeeded(){
+        assert enoughRides() == false : "This school already has enough rides";
+        return studentList.size() - getCap();
+    }
     public School(String name, String time, int cap){
         this.name = name;
         this.time = time;
