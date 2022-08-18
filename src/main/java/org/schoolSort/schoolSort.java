@@ -73,7 +73,7 @@ public class schoolSort {
         }
     }
 
-    //parses json file and creates array of students from it
+    //parses json file and creates array of students from it, needs path to json file
     public static Student[] createStudentArray(String path){
         try{
             ObjectMapper mapper = new ObjectMapper();
@@ -98,7 +98,7 @@ public class schoolSort {
                 buffer.append("\n");
             }
         }
-        buffer.append(count + " students unassigned");
+        buffer.append("\n" + count + " students unassigned\n");
         return buffer.toString();
     }
 

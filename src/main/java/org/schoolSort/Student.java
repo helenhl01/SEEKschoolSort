@@ -129,8 +129,9 @@ public class Student {
         if(Objects.equals(exec, true)){ output += ", is an exec";}
         if(Objects.equals(hyperloop, true)){output+=" (hyperloop)";}
         if(Objects.equals(nonRegister, true)){ output += ", will not register";}
-        if(school == null){ output+= ", unassigned";}
-        else{ output += ", assigned to " + school.getName();}
+        //if(school == null){ output+= ", unassigned";}
+        //else{ output += ", assigned to " + school.getName();}
+        if(!(school == null)){output += ", assigned to " + school.getName();}
         if(carSpace > 0){ output += ", can drive " + carSpace + " people";}
         output += ", available at ";
         if(monday1 == 1){ output += "Monday at 2:30, "; }
