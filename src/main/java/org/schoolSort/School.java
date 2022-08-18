@@ -8,8 +8,6 @@ public class School {
     private String time;
     private int cap;
     private List<Student> studentList = new ArrayList<>();
-    //full or not?
-    //number of students assigned
 
     public int getCarCap(){
         int count = 0;
@@ -26,7 +24,7 @@ public class School {
         if(getCarCap() >= cap){return true;}
         return false;
     }
-    public Boolean full(){
+    public Boolean isFull(){
         if(cap > studentList.size()){return false;}
         return true;
     }

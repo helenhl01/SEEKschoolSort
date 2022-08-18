@@ -26,24 +26,6 @@ public class Student {
     private int thursday1;
     private int thursday2;
 
-    public Student(String firstName, String lastName, String eid, School school, Boolean po, Boolean exec, Boolean nonRegister, int monday1, int monday2, int tuesday1, int tuesday2, int wednesday1, int wednesday2, int thursday1, int thursday2){
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.eid = eid;
-        this.school = school;
-        this.po = po;
-        this.exec = exec;
-        this.nonRegister = nonRegister;
-        this.monday1 = monday1;
-        this.monday2 = monday2;
-        this.tuesday1 = tuesday1;
-        this.tuesday2 = tuesday2;
-        this.wednesday1 = wednesday1;
-        this.wednesday2 = wednesday2;
-        this.thursday1 = thursday1;
-        this.thursday2 = thursday2;
-    }
-
     public String getFirstName(){ return firstName;}
     public String getLastName(){ return lastName;}
     public String getEid(){ return eid;}
@@ -68,6 +50,13 @@ public class Student {
     public Boolean isUnassigned(){
         if(school == null){ return true;}
         return false;
+    }
+
+    public Boolean hasPreference(){
+        return (prefers("monday1") || prefers("monday2") ||
+                prefers("tuesday1") || prefers("tuesday2") ||
+                prefers("wednesday1") || prefers("wednesday2") ||
+                prefers("thursday1") || prefers("thursday2"));
     }
 
     public Boolean prefers(String time){

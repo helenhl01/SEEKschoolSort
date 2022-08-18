@@ -5,7 +5,6 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="7de46e65-b817-47a1-853c-fe5379cf079d" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/gradle.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/gradle.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/org/schoolSort/School.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/schoolSort/School.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/org/schoolSort/Student.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/schoolSort/Student.java" afterDir="false" />
@@ -109,17 +108,17 @@
       <breakpoints>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/org/schoolSort/schoolSort.java</url>
-          <line>15</line>
+          <line>20</line>
           <option name="timeStamp" value="9" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/org/schoolSort/schoolSort.java</url>
-          <line>139</line>
+          <line>153</line>
           <option name="timeStamp" value="12" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/org/schoolSort/schoolSort.java</url>
-          <line>141</line>
+          <line>155</line>
           <option name="timeStamp" value="13" />
         </line-breakpoint>
       </breakpoints>

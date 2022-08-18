@@ -2,15 +2,20 @@ package org.schoolSort;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
+import java.io.*;
 import java.util.*;
 
 public class schoolSort {
     public static void main(String[] args) {
         Student[] studentArray = createStudentArray("../../Downloads/seekStudents.json");
         List<School> schoolList = schoolInits();
+        studentsAvail("monday1", studentArray);
+        studentsAvail("monday2", studentArray);
+        studentsAvail("tuesday1", studentArray);
+        studentsAvail("wednesday1", studentArray);
+        studentsAvail("wednesday2", studentArray);
+        studentsAvail("thursday1", studentArray);
+        studentsAvail("thursday2", studentArray);
         for(School x : schoolList){
             if(Objects.equals(x.getName(), "NYOS Hyperloop")){
                 fillHyperloop(x, studentArray);
@@ -18,13 +23,17 @@ public class schoolSort {
             else{fillSchool(x, studentArray);}
         }
         createReport("test.csv", "test.txt", schoolList, studentArray);
-        //implementation: list of schools, list of students, iterate through both, have a bool for full/not full, student assigned/unassigned
     }
 
+    //creates report of full school sort-csv file with school sort (and markers for pos, execs, etc) and txt file
+    //for unfilled schools, unassigned students, drivers needed
+    //args: file names for the reports, schoolList and studentArray
     public static void createReport(String csvFilename, String txtFilename, List<School> schoolList, Student[] studentArray){
         createSpreadsheet(csvFilename, schoolList);
         createTxtReport(txtFilename, schoolList, studentArray);
     }
+
+    //creates spreadsheet of school sort
     public static void createSpreadsheet(String filename, List<School> schoolList){
         try{
             BufferedWriter writer = new BufferedWriter(new FileWriter(filename));
@@ -50,6 +59,7 @@ public class schoolSort {
         }
     }
 
+    //creates txt file with unfilled schools, unassinged students, and transportation (not full school sort)
     public static void createTxtReport(String filename, List<School> schoolList, Student[] studentArray){
         try{
             BufferedWriter writer = new BufferedWriter(new FileWriter(filename));
@@ -62,14 +72,13 @@ public class schoolSort {
             e.printStackTrace();
         }
     }
+
+    //parses json file and creates array of students from it
     public static Student[] createStudentArray(String path){
         try{
             ObjectMapper mapper = new ObjectMapper();
             mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
             return mapper.readValue(new File(path), Student[].class);
-            //for(Student x : studentArray){
-            //    System.out.println(x);
-            //}
         }
         catch(Exception e){
             e.printStackTrace();
@@ -77,6 +86,7 @@ public class schoolSort {
         return null;
     }
 
+    //creates string with all students who haven't been assigned school (have to print it to see)
     public static String unassignedStudents(Student[] studentArray){
         StringBuffer buffer = new StringBuffer();
         buffer.append("\n\nUnassigned students: \n");
@@ -92,6 +102,7 @@ public class schoolSort {
         return buffer.toString();
     }
 
+    //creates string with schools that have unfilled spaces (have to print to see)
     public static String unfilledSchools(List<School> schoolList){
         StringBuffer buffer = new StringBuffer();
         buffer.append("Unfilled schools: \n");
@@ -103,6 +114,7 @@ public class schoolSort {
         return buffer.toString();
     }
 
+    //creates string of schools that still need more rides (have to print to see)
     public static String transpoReport(List<School> schoolList){
         StringBuffer buffer = new StringBuffer();
         buffer.append("\n\nDrivers needed: \n");
@@ -114,7 +126,8 @@ public class schoolSort {
         return buffer.toString();
     }
 
-    public static String formatTime(String time){ //do one for unformat? actually idk
+    //helper function for pretty formatting
+    public static String formatTime(String time){
         switch(time){
             case "monday1":
                 return "Monday at 2:30";
@@ -136,20 +149,24 @@ public class schoolSort {
         return null;
     }
 
+    //fills hyperloop school with only hyperloop specific students
     public static void fillHyperloop(School school, Student[] studentArray) {
         for(Student x : studentArray){
             if(x.getHyperloop()){
                 x.setSchool(school);
                 school.addStudent(x);
-                //will have to manually assert availability
+                //would have to manually assert availability
                 //if there's not enough students will have to add another loop but i dont really want to put random ppl in hyperloop yet
             }
         }
-
     }
 
+    //fills school, starting with getting enough drivers to cover capacity (not rides--rides depend on # students assigned)
+    //then students who have marked the time as their preference
+    //then students who are available and don't prefer a different time
+    //then students who are available and may prefer a diff time
     public static void fillSchool(School school, Student[] studentArray) {
-        assert !school.full() : "School is already full";
+        assert !school.isFull() : "School is already full";
         for(Student x : studentArray){ //drivers first
             if(!school.enoughDrivers()){
                 if(x.getCarSpace() > 0 && x.isAvailableAt(school.getTime()) &&  x.isUnassigned() && !x.getHyperloop()){
@@ -158,27 +175,39 @@ public class schoolSort {
                 }
             }
         }
-        if(!school.full()) {
+        if(!school.isFull()) {
             for (Student x : studentArray) { //get preferred next
                 if (x.isUnassigned() && x.prefers(school.getTime()) && !x.getHyperloop()) {
                     x.setSchool(school);
                     school.addStudent(x);
                 }
-                if(school.full()){
+                if(school.isFull()){
                     System.out.println(school.getName() + " has been filled");
                     //System.out.println(school);
                     break;
                 }
             }
         }
-        for (Student x : studentArray) {
-            if (!school.full()) {
+        for(Student x : studentArray){ //then get students without other preferences
+            if(!school.isFull()){
+                if(x.isUnassigned() && x.isAvailableAt(school.getTime()) && !x.getHyperloop() && !x.hasPreference()){
+                    x.setSchool(school);
+                    school.addStudent(x);
+                }
+            }
+            if (school.isFull()) {
+                System.out.println(school.getName() + " has been filled");
+                break;
+            }
+        }
+        for (Student x : studentArray) { //then students who may have other preferences
+            if (!school.isFull()) {
                 if (x.isUnassigned() && x.isAvailableAt(school.getTime()) && !x.getHyperloop()) {
                     x.setSchool(school);
                     school.addStudent(x);
                 }
             }
-            if (school.full()) {
+            if (school.isFull()) {
                 System.out.println(school.getName() + " has been filled");
                 //System.out.println(school);
                 break;
@@ -188,6 +217,7 @@ public class schoolSort {
         if(school.getStudentList().size() < school.getCap()){System.out.println("out of students");}
     }
 
+    //counts students available at a specific time
     public static int countStudents(String time, Student[] studentArray){
         int count = 0;
         switch(time){
@@ -195,146 +225,142 @@ public class schoolSort {
                 for(Student x : studentArray){
                     if(x.getMonday1() > 0){ count++;}
                 }
+                break;
             case "monday2":
                 for(Student x : studentArray){
                     if(x.getMonday2() > 0){ count++;}
                 }
+                break;
             case "tuesday1":
                 for(Student x : studentArray){
                     if(x.getTuesday1() > 0){ count++;}
                 }
+                break;
             case "tuesday2":
                 for(Student x : studentArray){
                     if(x.getTuesday2() > 0){ count++;}
                 }
+                break;
             case "wednesday1":
                 for(Student x : studentArray){
                     if(x.getWednesday1() > 0){ count++;}
                 }
+                break;
             case "wednesday2":
                 for(Student x : studentArray){
                     if(x.getWednesday2() > 0){ count++;}
                 }
+                break;
             case "thursday1":
                 for(Student x : studentArray){
                     if(x.getThursday1() > 0){ count++;}
                 }
+                break;
             case "thursday2":
                 for(Student x : studentArray){
                     if(x.getThursday2() > 0){ count++;}
                 }
+                break;
         }
         return count;
     }
 
-    public static void studentsAvail(String time, Student[] studentArray){
-        //add a switch
-        if(Objects.equals(time, "monday1")){
-            for(Student x : studentArray){
-                if(x.getMonday1() == 1){ System.out.print(x.getFirstName() + " " + x.getLastName());}
-                else if(x.getMonday1() == 2){ System.out.print(x.getFirstName() + " " + x.getLastName() + " (preferred)");}
-                else{continue;}
-                if(x.getSchool() == null){ System.out.print(", school unassigned");}
-                else{System.out.print(", assigned to " + x.getSchool());}
-                if(x.getExec()){ System.out.print(", exec");}
-                if(x.getPo()){ System.out.print(", po");}
-                System.out.println(", is available Monday at 2:30");
+    //prints to console a list of students available at given time
+    public static void studentsAvail(String time, Student[] studentArray) {
+        System.out.println("There are " + countStudents(time, studentArray) + " students available at " + formatTime(time) + ":");
+        for (Student x : studentArray) {
+            Boolean avail = false;
+            switch (time) {
+                case "monday1":
+                    if(x.getMonday1() > 0){ avail = true;}
+                    if (x.getMonday1() == 1) {
+                        System.out.print(x.getFirstName() + " " + x.getLastName());
+                    } else if (x.getMonday1() == 2) {
+                        System.out.print(x.getFirstName() + " " + x.getLastName() + " (preferred)");
+                    }
+                    break;
+                case "monday2":
+                    if(x.getMonday2() > 0){ avail = true;}
+                    if (x.getMonday2() == 1) {
+                        System.out.print(x.getFirstName() + " " + x.getLastName());
+                    } else if (x.getMonday2() == 2) {
+                        System.out.print(x.getFirstName() + " " + x.getLastName() + " (preferred)");
+                    }
+                    break;
+                case "tuesday1":
+                    if(x.getTuesday1() > 0){ avail = true;}
+                    if (x.getTuesday1() == 1) {
+                        System.out.print(x.getFirstName() + " " + x.getLastName());
+                    } else if (x.getTuesday1() == 2) {
+                        System.out.print(x.getFirstName() + " " + x.getLastName() + " (preferred)");
+                    }
+                    break;
+                case "tuesday2":
+                    if(x.getTuesday2() > 0){ avail = true;}
+                    if (x.getTuesday2() == 1) {
+                        System.out.print(x.getFirstName() + " " + x.getLastName());
+                    } else if (x.getTuesday2() == 2) {
+                        System.out.print(x.getFirstName() + " " + x.getLastName() + " (preferred)");
+                    }
+                    break;
+                case "wednesday1":
+                    if(x.getWednesday1() > 0){ avail = true;}
+                    if (x.getWednesday1() == 1) {
+                        System.out.print(x.getFirstName() + " " + x.getLastName());
+                    } else if (x.getWednesday1() == 2) {
+                        System.out.print(x.getFirstName() + " " + x.getLastName() + " (preferred)");
+                    }
+                    break;
+                case "wednesday2":
+                    if(x.getWednesday2() > 0){ avail = true;}
+                    if (x.getWednesday2() == 1) {
+                        System.out.print(x.getFirstName() + " " + x.getLastName());
+                    } else if (x.getWednesday2() == 2) {
+                        System.out.print(x.getFirstName() + " " + x.getLastName() + " (preferred)");
+                    }
+                    break;
+                case "thursday1":
+                    if(x.getThursday1() > 0){ avail = true;}
+                    if (x.getThursday1() == 1) {
+                        System.out.print(x.getFirstName() + " " + x.getLastName());
+                    } else if (x.getThursday1() == 2) {
+                        System.out.print(x.getFirstName() + " " + x.getLastName() + " (preferred)");
+                    }
+                    break;
+                case "thursday2":
+                    if(x.getThursday2() > 0){ avail = true;}
+                    if (x.getThursday2() == 1) {
+                        System.out.print(x.getFirstName() + " " + x.getLastName());
+                    } else if (x.getThursday2() == 2) {
+                        System.out.print(x.getFirstName() + " " + x.getLastName() + " (preferred)");
+                    }
+                    break;
             }
-            System.out.println("There are " + countStudents(time, studentArray) + " students available Monday at 2:30");
-        }
-        if(Objects.equals(time, "monday2")){
-            for(Student x : studentArray){
-                if(x.getMonday2() == 1){ System.out.print(x.getFirstName() + " " + x.getLastName());}
-                else if(x.getMonday2() == 2){ System.out.print(x.getFirstName() + " " + x.getLastName() + " (preferred)");}
-                else{continue;}
-                if(x.getSchool() == null){ System.out.print(", school unassigned");}
-                else{System.out.print(", assigned to " + x.getSchool());}
-                if(x.getExec()){ System.out.print(", exec");}
-                if(x.getPo()){ System.out.print(", po");}
-                System.out.println(", is available Monday at 3:30");
+            if(avail){
+                if (x.getSchool() == null) {
+                    System.out.print(", school unassigned");
+                } else {
+                    System.out.print(", assigned to " + x.getSchool());
+                }
+                if (x.getExec()) {
+                    System.out.print(", exec");
+                }
+                if (x.getPo()) {
+                    System.out.print(", po");
+                }
+                if (x.getHyperloop()) {
+                    System.out.print(", hyperloop");
+                }
+                if (x.getCarSpace() > 0) {
+                    System.out.print(", can drive " + x.getCarSpace());
+                }
+                System.out.println("");
             }
-            System.out.println("There are " + countStudents(time, studentArray) + " students available Monday at 3:30");
         }
-        if(Objects.equals(time, "tuesday1")){
-            for(Student x : studentArray){
-                if(x.getTuesday1() == 1){ System.out.print(x.getFirstName() + " " + x.getLastName());}
-                else if(x.getTuesday1() == 2){ System.out.print(x.getFirstName() + " " + x.getLastName() + " (preferred)");}
-                else{continue;}
-                if(x.getSchool() == null){ System.out.print(", school unassigned");}
-                else{System.out.print(", assigned to " + x.getSchool());}
-                if(x.getExec()){ System.out.print(", exec");}
-                if(x.getPo()){ System.out.print(", po");}
-                System.out.println(", is available Tuesday at 2:30");
-            }
-            System.out.println("There are " + countStudents(time, studentArray) + " students available Tuesday at 2:30");
-        }
-        if(Objects.equals(time, "tuesday2")){
-            for(Student x : studentArray){
-                if(x.getTuesday2() == 1){ System.out.print(x.getFirstName() + " " + x.getLastName());}
-                else if(x.getTuesday2() == 2){ System.out.print(x.getFirstName() + " " + x.getLastName() + " (preferred)");}
-                else{continue;}
-                if(x.getSchool() == null){ System.out.print(", school unassigned");}
-                else{System.out.print(", assigned to " + x.getSchool());}
-                if(x.getExec()){ System.out.print(", exec");}
-                if(x.getPo()){ System.out.print(", po");}
-                System.out.println(", is available Tuesday at 3:30");
-            }
-            System.out.println("There are " + countStudents(time, studentArray) + " students available Tuesday at 3:30");
-        }
-        if(Objects.equals(time, "wednesday1")){
-            for(Student x : studentArray){
-                if(x.getWednesday1() == 1){ System.out.print(x.getFirstName() + " " + x.getLastName());}
-                else if(x.getWednesday1() == 2){ System.out.print(x.getFirstName() + " " + x.getLastName() + " (preferred)");}
-                else{continue;}
-                if(x.getSchool() == null){ System.out.print(", school unassigned");}
-                else{System.out.print(", assigned to " + x.getSchool());}
-                if(x.getExec()){ System.out.print(", exec");}
-                if(x.getPo()){ System.out.print(", po");}
-                System.out.println(", is available Wednesday at 2:30");
-            }
-            System.out.println("There are " + countStudents(time, studentArray) + " students available Wednesday at 2:30");
-        }
-        if(Objects.equals(time, "wednesday2")){
-            for(Student x : studentArray){
-                if(x.getWednesday2() == 1){ System.out.print(x.getFirstName() + " " + x.getLastName());}
-                else if(x.getWednesday2() == 2){ System.out.print(x.getFirstName() + " " + x.getLastName() + " (preferred)");}
-                else{continue;}
-                if(x.getSchool() == null){ System.out.print(", school unassigned");}
-                else{System.out.print(", assigned to " + x.getSchool());}
-                if(x.getExec()){ System.out.print(", exec");}
-                if(x.getPo()){ System.out.print(", po");}
-                System.out.println(", is available Wednesday at 3:30");
-            }
-            System.out.println("There are " + countStudents(time, studentArray) + " students available Wednesday at 3:30");
-        }
-        if(Objects.equals(time, "thursday1")){
-            for(Student x : studentArray){
-                if(x.getThursday1() == 1){ System.out.print(x.getFirstName() + " " + x.getLastName());}
-                else if(x.getThursday1() == 2){ System.out.print(x.getFirstName() + " " + x.getLastName() + " (preferred)");}
-                else{continue;}
-                if(x.getSchool() == null){ System.out.print(", school unassigned");}
-                else{System.out.print(", assigned to " + x.getSchool());}
-                if(x.getExec()){ System.out.print(", exec");}
-                if(x.getPo()){ System.out.print(", po");}
-                System.out.println(", is available Thursday at 2:30");
-            }
-            System.out.println("There are " + countStudents(time, studentArray) + " students available Thursday at 2:30");
-        }
-        if(Objects.equals(time, "thursday2")){
-            for(Student x : studentArray){
-                if(x.getThursday2() == 1){ System.out.print(x.getFirstName() + " " + x.getLastName());}
-                else if(x.getThursday2() == 2){ System.out.print(x.getFirstName() + " " + x.getLastName() + " (preferred)");}
-                else{continue;}
-                if(x.getSchool() == null){ System.out.print(", school unassigned");}
-                else{System.out.print(", assigned to " + x.getSchool());}
-                if(x.getExec()){ System.out.print(", exec");}
-                if(x.getPo()){ System.out.print(", po");}
-                System.out.println(", is available Thursday at 3:30");
-            }
-            System.out.println("There are " + countStudents(time, studentArray) + " students available Thursday at 3:30");
-        }
-
+        System.out.println("");
     }
+
+    //initialize schools manually
     public static List<School> schoolInits(){
         List<School> schoolList = new ArrayList<>();
         schoolList.add(new School("school1", "monday1", 10));
@@ -347,30 +373,5 @@ public class schoolSort {
         schoolList.add(new School("school8", "thursday2", 12));
         schoolList.add(new School("NYOS Hyperloop", "thursday2", 5));
         return schoolList;
-    }
-
-    public static List<Student> studentInits(){ //need 27
-        List<Student> studentList = new ArrayList<>();
-        studentList.add(new Student("Sabah", "Jamal", "sj28467", null, false, false, false,0,0,1,1,0,0,1,1));
-        studentList.add(new Student("Max Chung","Richter","mcr3587",null,false, false,false,1,1,0,0,0,0,0,0));
-        studentList.add(new Student("Shraavan","Divakarla","sd36977",null, false, false, false,0,0,1,1,0,2,1,1));
-        studentList.add(new Student("Tanya","Goyal","tg25523",null, false, false,false,0,0,0,0,1,0,0,0));
-        studentList.add(new Student("Scott","Crowe","null",null, false, false,false, 0,0,1,1,0,0,1,1));
-        studentList.add(new Student("Angel","Patel","ap54292",null, false, false,false,0,0,1,0,0,0,1,0));
-        studentList.add(new Student("Mitali","Khoje","muk86",null, false, false,false,0,0,2,0,0,0,1,0));
-        studentList.add(new Student("Ameil","Kumar","ask2373",null, false, false, false,0,0,1,1,1,0,1,1));
-        studentList.add(new Student("Ruojun","Lu","RL34634",null, false, false, false,1,0,0,1,1,1,1,0));
-        studentList.add(new Student("Ashley","Settle","aes5247",null, false, false,false, 0,0,1,1,0,0,0,0));
-        studentList.add(new Student("Naisha","Singh","ns35384",null, false, false, false,0,1,0,0,0,1,0,0));
-        studentList.add(new Student("Alex","Koo","gk7244", null, false, false,false,1,0,0,0,0,0,0,0));
-        studentList.add(new Student("Gina","Perkins","glp646",null, false, false, false,1,1,0,0,1,1,0,0));
-        studentList.add(new Student("Isabel","Aguilera","ifa247",null, false, false,false,1,1,0,0,1,1,0,0));
-        studentList.add(new Student("Ashwin","Purohit","ap53293",null, false, false,false,0,0,1,0,0,0,1,0));
-        studentList.add(new Student("Brandi","Nguyen","bcn444",null, false, false, false,1,0,0,0,1,0,0,0));
-        studentList.add(new Student("Jonathan","Alverzo","jba2365",null, false, false,false, 0,0,0,1,0,0,1,0));
-        studentList.add(new Student("Morgan","Frentz","mlf2992",null, false, false,false, 0,1,0,0,0,1,0,0));
-        studentList.add(new Student("Emily","Le","ehl439",null, false, false,false, 0,0,1,0,1,0,0,0));
-        return studentList;
-
     }
 }
