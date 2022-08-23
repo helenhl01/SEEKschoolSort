@@ -9,13 +9,13 @@ public class schoolSort {
     public static void main(String[] args) {
         Student[] studentArray = createStudentArray("../../Downloads/seekStudents.json");
         List<School> schoolList = schoolInits();
-        studentsAvail("monday1", studentArray);
-        studentsAvail("monday2", studentArray);
-        studentsAvail("tuesday1", studentArray);
-        studentsAvail("wednesday1", studentArray);
-        studentsAvail("wednesday2", studentArray);
-        studentsAvail("thursday1", studentArray);
-        studentsAvail("thursday2", studentArray);
+        //studentsAvail("monday1", studentArray);
+        //studentsAvail("monday2", studentArray);
+        //studentsAvail("tuesday1", studentArray);
+        //studentsAvail("wednesday1", studentArray);
+        //studentsAvail("wednesday2", studentArray);
+        //studentsAvail("thursday1", studentArray);
+        //studentsAvail("thursday2", studentArray);
         for(School x : schoolList){
             if(Objects.equals(x.getName(), "NYOS Hyperloop")){
                 fillHyperloop(x, studentArray);
@@ -159,6 +159,56 @@ public class schoolSort {
                 //if there's not enough students will have to add another loop but i dont really want to put random ppl in hyperloop yet
             }
         }
+        if(!school.isFull()){
+            for(Student x : studentArray){ //drivers first
+                if(!school.enoughDrivers()){
+                    if(x.getCarSpace() > 0 && x.isAvailableAt(school.getTime()) &&  x.isUnassigned()){
+                        x.setSchool(school);
+                        school.addStudent(x);
+                    }
+                }
+            }
+            if(!school.isFull()) {
+                for (Student x : studentArray) { //get preferred next
+                    if (x.isUnassigned() && x.prefers(school.getTime())) {
+                        x.setSchool(school);
+                        school.addStudent(x);
+                    }
+                    if(school.isFull()){
+                        //System.out.println(school.getName() + " has been filled");
+                        //System.out.println(school);
+                        break;
+                    }
+                }
+            }
+            for(Student x : studentArray){ //then get students without other preferences
+                if(!school.isFull()){
+                    if(x.isUnassigned() && x.isAvailableAt(school.getTime()) && !x.hasPreference()){
+                        x.setSchool(school);
+                        school.addStudent(x);
+                    }
+                }
+                if (school.isFull()) {
+                    //System.out.println(school.getName() + " has been filled");
+                    break;
+                }
+            }
+            for (Student x : studentArray) { //then students who may have other preferences
+                if (!school.isFull()) {
+                    if (x.isUnassigned() && x.isAvailableAt(school.getTime())) {
+                        x.setSchool(school);
+                        school.addStudent(x);
+                    }
+                }
+                if (school.isFull()) {
+                    //System.out.println(school.getName() + " has been filled");
+                    //System.out.println(school);
+                    break;
+                }
+
+            }
+        }
+
     }
 
     //fills school, starting with getting enough drivers to cover capacity (not rides--rides depend on # students assigned)
@@ -182,7 +232,7 @@ public class schoolSort {
                     school.addStudent(x);
                 }
                 if(school.isFull()){
-                    System.out.println(school.getName() + " has been filled");
+                    //System.out.println(school.getName() + " has been filled");
                     //System.out.println(school);
                     break;
                 }
@@ -196,7 +246,7 @@ public class schoolSort {
                 }
             }
             if (school.isFull()) {
-                System.out.println(school.getName() + " has been filled");
+                //System.out.println(school.getName() + " has been filled");
                 break;
             }
         }
@@ -208,7 +258,7 @@ public class schoolSort {
                 }
             }
             if (school.isFull()) {
-                System.out.println(school.getName() + " has been filled");
+                //System.out.println(school.getName() + " has been filled");
                 //System.out.println(school);
                 break;
             }
