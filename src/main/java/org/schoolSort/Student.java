@@ -9,6 +9,7 @@ public class Student {
     private String lastName;
     private String eid;
     private School school;
+    private String schoolName;
     private Boolean po = false; //default false, have to set true
     private Boolean exec = false; //default false, have to set true
     private Boolean nonRegister = false; //default false, have to set true
@@ -26,6 +27,7 @@ public class Student {
     private int thursday1;
     private int thursday2;
 
+    public String getSchoolName(){return schoolName;}
     public String getFirstName(){ return firstName;}
     public String getLastName(){ return lastName;}
     public String getEid(){ return eid;}
@@ -112,6 +114,7 @@ public class Student {
     public void setPhone(String phone){ this.phone = phone;}
     public void setCarSpace(int carSpace){this.carSpace = carSpace;}
     public void setHyperloop(Boolean hyperloop){this.hyperloop = hyperloop;}
+    public void setSchoolName(String schoolName){this.schoolName = schoolName;}
 
     public void setMonday1(int monday1){ this.monday1 = monday1;}
     public void setMonday2(int monday2){ this.monday2 = monday2;}

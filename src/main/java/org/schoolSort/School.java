@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Objects;
 
 public class School {
+    private School(){}
     private String name;
     private String time;
     private int cap;

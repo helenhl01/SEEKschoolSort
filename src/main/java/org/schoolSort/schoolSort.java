@@ -4,11 +4,12 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 
 import java.io.*;
 import java.util.*;
-
+//add smth so that it makes them preferred if they only have one availability
 public class schoolSort {
     public static void main(String[] args) {
-        Student[] studentArray = createStudentArray("../../Downloads/seekStudents.json");
         List<School> schoolList = schoolInits();
+        Student[] studentArray = createStudentArray("../../Downloads/seekStudents8-23 (5).json");
+        schoolAssignmentInit(studentArray, schoolList);
         //studentsAvail("monday1", studentArray);
         //studentsAvail("monday2", studentArray);
         //studentsAvail("tuesday1", studentArray);
@@ -17,12 +18,28 @@ public class schoolSort {
         //studentsAvail("thursday1", studentArray);
         //studentsAvail("thursday2", studentArray);
         for(School x : schoolList){
-            if(Objects.equals(x.getName(), "NYOS Hyperloop")){
+            if(Objects.equals(x.getName(), "Hyperloop")){
                 fillHyperloop(x, studentArray);
+            }
+            else if(Objects.equals(x.getName(), "Blanton")){
+                fillBlanton(x,studentArray);
             }
             else{fillSchool(x, studentArray);}
         }
         createReport("test.csv", "test.txt", schoolList, studentArray);
+    }
+
+    public static void schoolAssignmentInit(Student[] studentArray, List<School> schoolList){
+        for(Student x : studentArray){
+            if(!(x.getSchoolName() == null)){
+                for(School y : schoolList){
+                    if(Objects.equals(x.getSchoolName(), y.getName())){
+                        x.setSchool(y);
+                        y.addStudent(x);
+                    }
+                }
+            }
+        }
     }
 
     //creates report of full school sort-csv file with school sort (and markers for pos, execs, etc) and txt file
@@ -31,6 +48,18 @@ public class schoolSort {
     public static void createReport(String csvFilename, String txtFilename, List<School> schoolList, Student[] studentArray){
         createSpreadsheet(csvFilename, schoolList);
         createTxtReport(txtFilename, schoolList, studentArray);
+    }
+
+    public static String extraRides(List<School> schoolList){
+        StringBuffer buffer = new StringBuffer();
+        buffer.append("\n\nExtra Car Space: \n");
+        for(School x : schoolList){
+            if(x.getCarCap() > x.getStudentList().size()){
+                buffer.append(x.getName() + " has " + (x.getCarCap() - x.getStudentList().size()) + " extra rides");
+                buffer.append("\n");
+            }
+        }
+        return buffer.toString();
     }
 
     //creates spreadsheet of school sort
@@ -66,6 +95,7 @@ public class schoolSort {
             writer.append(unfilledSchools(schoolList));
             writer.append(unassignedStudents(studentArray));
             writer.append(transpoReport(schoolList));
+            writer.append(extraRides(schoolList));
             writer.close();
         }
         catch(Exception e){
@@ -152,7 +182,7 @@ public class schoolSort {
     //fills hyperloop school with only hyperloop specific students
     public static void fillHyperloop(School school, Student[] studentArray) {
         for(Student x : studentArray){
-            if(x.getHyperloop()){
+            if(x.getHyperloop() && x.isUnassigned()){
                 x.setSchool(school);
                 school.addStudent(x);
                 //would have to manually assert availability
@@ -174,11 +204,7 @@ public class schoolSort {
                         x.setSchool(school);
                         school.addStudent(x);
                     }
-                    if(school.isFull()){
-                        //System.out.println(school.getName() + " has been filled");
-                        //System.out.println(school);
-                        break;
-                    }
+                    if(school.isFull()){break;                    }
                 }
             }
             for(Student x : studentArray){ //then get students without other preferences
@@ -188,10 +214,7 @@ public class schoolSort {
                         school.addStudent(x);
                     }
                 }
-                if (school.isFull()) {
-                    //System.out.println(school.getName() + " has been filled");
-                    break;
-                }
+                if (school.isFull()) {break;                }
             }
             for (Student x : studentArray) { //then students who may have other preferences
                 if (!school.isFull()) {
@@ -200,11 +223,7 @@ public class schoolSort {
                         school.addStudent(x);
                     }
                 }
-                if (school.isFull()) {
-                    //System.out.println(school.getName() + " has been filled");
-                    //System.out.println(school);
-                    break;
-                }
+                if (school.isFull()) {break;}
 
             }
         }
@@ -224,6 +243,7 @@ public class schoolSort {
                     school.addStudent(x);
                 }
             }
+            if(school.enoughDrivers()){break;            }
         }
         if(!school.isFull()) {
             for (Student x : studentArray) { //get preferred next
@@ -253,6 +273,47 @@ public class schoolSort {
         for (Student x : studentArray) { //then students who may have other preferences
             if (!school.isFull()) {
                 if (x.isUnassigned() && x.isAvailableAt(school.getTime()) && !x.getHyperloop()) {
+                    x.setSchool(school);
+                    school.addStudent(x);
+                }
+            }
+            if (school.isFull()) {
+                //System.out.println(school.getName() + " has been filled");
+                //System.out.println(school);
+                break;
+            }
+
+        }
+        if(school.getStudentList().size() < school.getCap()){System.out.println("out of students");}
+    }
+
+
+//bruh I KNOW there's a better way to do this but IM IN A RUSH IDC
+    public static void fillBlanton(School school, Student[] studentArray) {
+        assert !school.isFull() : "School is already full";
+        for(Student x : studentArray){ //drivers first
+            if(!school.enoughDrivers()){
+                if(x.getCarSpace() > 0 && x.isAvailableAt("wednesday1") && x.isAvailableAt("wednesday2") &&  x.isUnassigned() && !x.getHyperloop()){
+                    x.setSchool(school);
+                    school.addStudent(x);
+                }
+            }
+        }
+        for(Student x : studentArray){ //then get students without other preferences
+            if(!school.isFull()){
+                if(x.isUnassigned() && x.isAvailableAt("wednesday1") && x.isAvailableAt("wednesday2") && !x.getHyperloop() && !x.hasPreference()){
+                    x.setSchool(school);
+                    school.addStudent(x);
+                }
+            }
+            if (school.isFull()) {
+                //System.out.println(school.getName() + " has been filled");
+                break;
+            }
+        }
+        for (Student x : studentArray) { //then students who may have other preferences
+            if (!school.isFull()) {
+                if (x.isUnassigned() && x.isAvailableAt("wednesday1") && x.isAvailableAt("wednesday2") && !x.getHyperloop()) {
                     x.setSchool(school);
                     school.addStudent(x);
                 }
@@ -411,17 +472,28 @@ public class schoolSort {
     }
 
     //initialize schools manually
-    public static List<School> schoolInits(){
+    public static List<School> schoolInits(){ //tbh if schools aren't filled and there's ppl still unassinged, just like,, rearrange the list since it goes through in order
         List<School> schoolList = new ArrayList<>();
-        schoolList.add(new School("school1", "monday1", 10));
-        schoolList.add(new School("school2", "monday2", 6));
-        schoolList.add(new School("school3", "tuesday1", 4));
-        schoolList.add(new School("school4", "tuesday2", 10));
-        schoolList.add(new School("school5", "wednesday1", 20));
-        schoolList.add(new School("school6", "wednesday2", 15));
-        schoolList.add(new School("school7", "thursday1", 10));
-        schoolList.add(new School("school8", "thursday2", 12));
-        schoolList.add(new School("NYOS Hyperloop", "thursday2", 5));
+        schoolList.add(new School("Blanton", "wednesday1", 20));
+        schoolList.add(new School("NYOS E2", "wednesday2", 16));
+        schoolList.add(new School("NYOS E1", "monday2", 16));
+        schoolList.add(new School("Perez", "wednesday1", 14));
+        schoolList.add(new School("Andrews", "monday1", 14));
+        schoolList.add(new School("Overton", "thursday1", 14));
+
+        schoolList.add(new School("Garcia", "thursday2", 14));
+        schoolList.add(new School("Padron", "tuesday1", 14));
+        schoolList.add(new School("NYOS M", "tuesday2", 13));
+
+        schoolList.add(new School("Hyperloop", "thursday2", 10));
+
+
+
+
+
+
+
+
         return schoolList;
     }
 }
